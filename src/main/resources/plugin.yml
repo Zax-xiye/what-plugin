@@ -1,0 +1,6 @@
+name: What
+version: '1.0-SNAPSHOT'
+main: xyz.xyzax.what.What
+api-version: '1.21'
+author: Zax
+description: ？
