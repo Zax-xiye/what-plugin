@@ -9,6 +9,8 @@ public final class What extends JavaPlugin {
         // Plugin startup logic
         getLogger().info("What? 已加载！");
 
+        // 注册监听器
+        getServer().getPluginManager().registerEvents(new WhatListener(this), this);
     }
 
     @Override
