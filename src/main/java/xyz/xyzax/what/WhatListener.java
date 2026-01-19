@@ -31,7 +31,7 @@ public class WhatListener implements Listener {
         // 检查消息是否完全匹配 "?" 或 "？"
         if (plainMessage.trim().equals("?") || plainMessage.trim().equals("？")) {
             Player player = event.getPlayer();
-            
+
             // 在主线程生成实体
             Bukkit.getScheduler().runTask(plugin, () -> {
                 spawnQuestionMark(player);
@@ -42,7 +42,7 @@ public class WhatListener implements Listener {
     private void spawnQuestionMark(Player player) {
         Location location = player.getEyeLocation();
         // 向玩家右侧偏移一点，基于玩家的朝向
-        location.add(0, 0.5, 0); 
+        location.add(0, 0.5, 0);
 
         // 创建 TextDisplay 实体
         TextDisplay display = player.getWorld().spawn(location, TextDisplay.class, entity -> {
@@ -50,16 +50,19 @@ public class WhatListener implements Listener {
             entity.setBillboard(Display.Billboard.CENTER); // 始终面向玩家
             entity.setBackgroundColor(Color.fromARGB(0, 0, 0, 0)); // 透明背景
             entity.setShadowed(true);
-            
+
             // 调整缩放
             Transformation transformation = entity.getTransformation();
             transformation.getScale().set(1.5f, 1.5f, 1.5f);
             entity.setTransformation(transformation);
+
+            entity.setPersistent(false); // 确保重启服务器后不保存
+            entity.addScoreboardTag("what_plugin_mark"); // 添加标签以便清理
         });
 
         // 让它骑在玩家头上
         player.addPassenger(display);
-        
+
         // 稍微调整偏移量，因为骑乘时位置是固定的
         // TextDisplay 的 translation 可以调整相对于骑乘实体的偏移
         Transformation transformation = display.getTransformation();
