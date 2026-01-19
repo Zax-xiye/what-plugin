@@ -8,6 +8,7 @@ public final class What extends JavaPlugin {
     @Override
     public void onEnable() {
         // Plugin startup logic
+        saveDefaultConfig();
         getLogger().info("What? 已加载！");
 
         // 注册监听器

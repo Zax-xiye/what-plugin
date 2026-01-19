@@ -26,51 +26,56 @@ public class WhatListener implements Listener {
     @EventHandler
     public void onChat(AsyncChatEvent event) {
         Component message = event.message();
-        String plainMessage = PlainTextComponentSerializer.plainText().serialize(message);
+        String plainMessage = PlainTextComponentSerializer.plainText().serialize(message).trim();
 
-        // 检查消息是否完全匹配 "?" 或 "？"
-        if (plainMessage.trim().equals("?") || plainMessage.trim().equals("？")) {
-            Player player = event.getPlayer();
-
-            // 在主线程生成实体
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                spawnQuestionMark(player);
-            });
+        // 问号
+        if ((plainMessage.equals("?") || plainMessage.equals("？"))
+                && plugin.getConfig().getBoolean("features.question-mark", true)) {
+            spawnSymbol(event.getPlayer(), "?", NamedTextColor.YELLOW);
+        }
+        // 感叹号
+        else if ((plainMessage.equals("!") || plainMessage.equals("！"))
+                && plugin.getConfig().getBoolean("features.exclamation-mark", true)) {
+            spawnSymbol(event.getPlayer(), "!", NamedTextColor.RED);
+        }
+        // 省略号
+        else if ((plainMessage.equals("...") || plainMessage.equals("。。。"))
+                && plugin.getConfig().getBoolean("features.ellipsis", true)) {
+            spawnSymbol(event.getPlayer(), "...", NamedTextColor.WHITE);
         }
     }
 
-    private void spawnQuestionMark(Player player) {
-        Location location = player.getEyeLocation();
-        // 向玩家右侧偏移一点，基于玩家的朝向
-        location.add(0, 0.5, 0);
+    private void spawnSymbol(Player player, String text, NamedTextColor color) {
+        // 在主线程生成实体
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            Location location = player.getEyeLocation();
+            location.add(0, 0.5, 0);
 
-        // 创建 TextDisplay 实体
-        TextDisplay display = player.getWorld().spawn(location, TextDisplay.class, entity -> {
-            entity.text(Component.text("?").color(NamedTextColor.YELLOW)); // 大号黄色问号
-            entity.setBillboard(Display.Billboard.CENTER); // 始终面向玩家
-            entity.setBackgroundColor(Color.fromARGB(0, 0, 0, 0)); // 透明背景
-            entity.setShadowed(true);
+            // 创建 TextDisplay 实体
+            TextDisplay display = player.getWorld().spawn(location, TextDisplay.class, entity -> {
+                entity.text(Component.text(text).color(color)); 
+                entity.setBillboard(Display.Billboard.CENTER);
+                entity.setBackgroundColor(Color.fromARGB(0, 0, 0, 0));
+                entity.setShadowed(true);
 
-            // 调整缩放
-            Transformation transformation = entity.getTransformation();
-            transformation.getScale().set(1.5f, 1.5f, 1.5f);
-            entity.setTransformation(transformation);
+                // 调整缩放
+                Transformation transformation = entity.getTransformation();
+                transformation.getScale().set(1.5f, 1.5f, 1.5f);
+                entity.setTransformation(transformation);
 
-            entity.setPersistent(false); // 确保重启服务器后不保存
-            entity.addScoreboardTag("what_plugin_mark"); // 添加标签以便清理
+                entity.setPersistent(false);
+                entity.addScoreboardTag("what_plugin_mark");
+            });
+
+            // 骑在玩家头上
+            player.addPassenger(display);
+
+            // 调整位置
+            Transformation transformation = display.getTransformation();
+            transformation.getTranslation().set(0.45f, -0.35f, 0);
+            display.setTransformation(transformation);
+
+            Bukkit.getScheduler().runTaskLater(plugin, display::remove, 60L);
         });
-
-        // 让它骑在玩家头上
-        player.addPassenger(display);
-
-        // 稍微调整偏移量，因为骑乘时位置是固定的
-        // TextDisplay 的 translation 可以调整相对于骑乘实体的偏移
-        Transformation transformation = display.getTransformation();
-        // 调整位置到头侧面
-        transformation.getTranslation().set(0.45f, -0.35f, 0);
-        display.setTransformation(transformation);
-
-        // 3秒后移除
-        Bukkit.getScheduler().runTaskLater(plugin, display::remove, 60L);
     }
 }
