@@ -3,4 +3,5 @@ version: '1.0-SNAPSHOT'
 main: xyz.xyzax.what.What
 api-version: '1.21'
 author: Zax
+website: https://github.com/Zax-xiye/what-plugin
 description: ？
